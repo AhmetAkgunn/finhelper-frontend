@@ -5,7 +5,6 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var showingSignUp = false
-    @State private var showingMainView = false
     
     var body: some View {
         NavigationView {
@@ -70,18 +69,19 @@ struct LoginView: View {
         .fullScreenCover(isPresented: $showingSignUp) {
             SignUpView()
         }
-        .fullScreenCover(isPresented: $showingMainView) {
+        .fullScreenCover(isPresented: .init(
+            get: { authViewModel.isAuthenticated },
+            set: { _ in }
+        )) {
             ContentView()
-        }
-        .onChange(of: authViewModel.isAuthenticated) { _, isAuthenticated in
-            if isAuthenticated {
-                showingMainView = true
-            }
         }
     }
     
     private var isFormValid: Bool {
-        !email.isEmpty && !password.isEmpty && email.contains("@")
+        !email.isEmpty && 
+        !password.isEmpty && 
+        email.contains("@") && 
+        email.contains(".")
     }
     
     private func login() {

@@ -18,19 +18,24 @@ class AuthViewModel: ObservableObject {
             let signUpRequest = SignUpRequest(email: email, password: password, name: name)
             let jsonData = try JSONEncoder().encode(signUpRequest)
             
+            print("Kayıt isteği gönderiliyor...")
             let response: AuthResponse = try await networkManager.makeRequest(
-                endpoint: "/api/auth/signup",
-                method: "POST",
+                endpoint: "/api/auth/register",
+                method: .post,
                 body: jsonData
             )
+            print("Kayıt başarılı!")
             
             self.currentUser = response.user
             self.isAuthenticated = true
-            // Token'ı güvenli bir şekilde saklayın (Keychain'de)
             saveToken(response.token)
             
-        } catch {
+        } catch let error as NetworkError {
+            print("Kayıt hatası: \(error.localizedDescription)")
             self.errorMessage = error.localizedDescription
+        } catch {
+            print("Beklenmeyen hata: \(error.localizedDescription)")
+            self.errorMessage = "Beklenmeyen bir hata oluştu"
         }
         
         isLoading = false
@@ -44,26 +49,36 @@ class AuthViewModel: ObservableObject {
             let loginRequest = ["email": email, "password": password]
             let jsonData = try JSONEncoder().encode(loginRequest)
             
+            print("Giriş isteği gönderiliyor...")
             let response: AuthResponse = try await networkManager.makeRequest(
                 endpoint: "/api/auth/login",
-                method: "POST",
+                method: .post,
                 body: jsonData
             )
+            print("Giriş başarılı!")
             
             self.currentUser = response.user
             self.isAuthenticated = true
             saveToken(response.token)
             
-        } catch {
+        } catch let error as NetworkError {
+            print("Giriş hatası: \(error.localizedDescription)")
             self.errorMessage = error.localizedDescription
+        } catch {
+            print("Beklenmeyen hata: \(error.localizedDescription)")
+            self.errorMessage = "Beklenmeyen bir hata oluştu"
         }
         
         isLoading = false
     }
     
+    func logout() {
+        UserDefaults.standard.removeObject(forKey: "authToken")
+        self.currentUser = nil
+        self.isAuthenticated = false
+    }
+    
     private func saveToken(_ token: String) {
-        // Token'ı Keychain'e kaydetme işlemi
-        // Bu kısmı daha sonra implement edeceğiz
         UserDefaults.standard.set(token, forKey: "authToken")
     }
 } 

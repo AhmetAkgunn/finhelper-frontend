@@ -88,6 +88,7 @@ struct SignUpView: View {
         !password.isEmpty &&
         !confirmPassword.isEmpty &&
         password == confirmPassword &&
+        password.count >= 6 &&
         email.contains("@") &&
         email.contains(".")
     }
